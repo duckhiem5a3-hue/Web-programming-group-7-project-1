@@ -11,7 +11,22 @@
         <div class="room-link">
             Link phòng chơi (Gửi cho người thứ 2): <a id="room-link" href="#"></a>
         </div>
+        <div id="room-choice" class="room-choice">
+            <h2>Chọn cách vào chơi</h2>
+            <div class="room-options">
+                <button id="random-room" type="button">Ghép ngẫu nhiên</button>
+                <button id="create-room" type="button">Tạo phòng mới</button>
+            </div>
+            <div class="room-join">
+                <label for="room-code-input">Mã phòng có sẵn</label>
+                <input id="room-code-input" type="text" maxlength="6" autocomplete="off" placeholder="VD: A1B2C3">
+                <button id="join-room" type="button">Vào phòng</button>
+            </div>
+            <div id="room-choice-status" role="status"></div>
+        </div>
         <div id="turn">Đỏ đang đi</div>
+        <div id="player-team" aria-live="polite"></div>
+        <div id="room-state">Đang kết nối phòng chơi...</div>
         <div id="status">Đang kết nối phòng chơi...</div>
         <div class="game-actions">
             <button id="reset-game" type="button">Chơi lại từ đầu</button>
