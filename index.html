@@ -12,28 +12,13 @@
             Link phòng chơi (Gửi cho người thứ 2): <a id="room-link" href="#"></a>
         </div>
         <div id="turn">Đỏ đang đi</div>
-        <div id="status">Game bắt đầu. Phe Đỏ đi trước.</div>
-
-        <div id="board" class="playhtml-sync" aria-label="Bàn cờ Oẳn Tù Tì"></div>
+        <div id="status">Đang kết nối phòng chơi...</div>
+        <div class="game-actions">
+            <button id="reset-game" type="button">Chơi lại từ đầu</button>
+        </div>
+        <div id="board" aria-label="Bàn cờ Oẳn Tù Tì"></div>
     </main>
 
-    <script src="main.js"></script>
-
-    <script type="module">
-        import { playhtml } from "https://unpkg.com/playhtml";
-        window.playhtml = playhtml;
-
-        const urlParams = new URLSearchParams(window.location.search);
-        let roomId = urlParams.get('room');
-        if (!roomId) {
-            roomId = Math.random().toString(36).substring(2, 8);
-            window.history.replaceState({}, '', `?room=${roomId}`);
-        }
-
-        document.getElementById('room-link').href = window.location.href;
-        document.getElementById('room-link').innerText = window.location.href;
-
-        playhtml.init({ room: roomId });
-    </script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>

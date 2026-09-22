@@ -1,51 +1,59 @@
+import { playhtml } from "https://unpkg.com/playhtml";
 
 const SIZE = 9;
-const boardEl = document.getElementById('board');
-const turnEl = document.getElementById('turn');
-const statusEl = document.getElementById('status');
+const ROOM_ID = "ottv2-main-room";
+const STATE_CHANNEL_NAME = "ottv2-game-state";
+
+const boardEl = document.getElementById("board");
+const turnEl = document.getElementById("turn");
+const statusEl = document.getElementById("status");
+const roomLinkEl = document.getElementById("room-link");
+const resetGameBtn = document.getElementById("reset-game");
 
 const PIECE_ICONS = {
-    rock: '✊',
-    paper: '✋',
-    scissors: '✌️'
+    rock: "✊",
+    paper: "✋",
+    scissors: "✌️"
 };
 
 const PIECE_BEATS = {
-    rock: 'scissors',
-    paper: 'rock',
-    scissors: 'paper'
+    rock: "scissors",
+    paper: "rock",
+    scissors: "paper"
 };
 
 const TEAM_NAMES = {
-    red: 'Đỏ',
-    blue: 'Xanh'
+    red: "Đỏ",
+    blue: "Xanh"
 };
 
 const STARTING_POSITIONS = [
-    ['rock', 'red', 7, 0],
-    ['paper', 'red', 7, 1],
-    ['scissors', 'red', 7, 2],
-    ['rock', 'red', 7, 3],
-    ['paper', 'red', 7, 4],
-    ['scissors', 'red', 7, 5],
-    ['rock', 'red', 7, 6],
-    ['paper', 'red', 7, 7],
-    ['scissors', 'red', 7, 8],
-    ['scissors', 'blue', 1, 0],
-    ['rock', 'blue', 1, 1],
-    ['paper', 'blue', 1, 2],
-    ['scissors', 'blue', 1, 3],
-    ['rock', 'blue', 1, 4],
-    ['paper', 'blue', 1, 5],
-    ['scissors', 'blue', 1, 6],
-    ['rock', 'blue', 1, 7],
-    ['paper', 'blue', 1, 8]
+    ["rock", "red", 7, 0],
+    ["paper", "red", 7, 1],
+    ["scissors", "red", 7, 2],
+    ["rock", "red", 7, 3],
+    ["paper", "red", 7, 4],
+    ["scissors", "red", 7, 5],
+    ["rock", "red", 7, 6],
+    ["paper", "red", 7, 7],
+    ["scissors", "red", 7, 8],
+    ["scissors", "blue", 1, 0],
+    ["rock", "blue", 1, 1],
+    ["paper", "blue", 1, 2],
+    ["scissors", "blue", 1, 3],
+    ["rock", "blue", 1, 4],
+    ["paper", "blue", 1, 5],
+    ["scissors", "blue", 1, 6],
+    ["rock", "blue", 1, 7],
+    ["paper", "blue", 1, 8]
 ];
 
 let selected = null;
-let currentTeam = 'red';
+let currentTeam = "red";
 let isGameOver = false;
 let boardState = [];
+let sharedStateChannel = null;
+let isApplyingRemoteState = false;
 
 function setStatus(message) {
     statusEl.textContent = message;
@@ -55,43 +63,119 @@ function renderTurn() {
     turnEl.textContent = `${TEAM_NAMES[currentTeam]} đang đi`;
 }
 
+function resetGameState() {
+    selected = null;
+    currentTeam = "red";
+    isGameOver = false;
+    boardState = buildInitialBoard();
+    renderBoard();
+    setStatus("Đã chơi lại từ đầu. Phe Đỏ đang đi.");
+    publishSharedState();
+}
+
 function makeEmptyBoard() {
     return Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
 }
 
 function buildInitialBoard() {
     const board = makeEmptyBoard();
+
     STARTING_POSITIONS.forEach(([piece, team, r, c]) => {
         board[r][c] = { piece, team };
     });
+
     return board;
 }
 
+function getSharedState() {
+    return {
+        board: boardState,
+        currentTeam,
+        isGameOver
+    };
+}
+
+function publishSharedState() {
+    if (!sharedStateChannel || isApplyingRemoteState) return;
+    sharedStateChannel.setData(getSharedState());
+}
+
+function restoreSharedState(sharedState) {
+    if (!sharedState) return;
+
+    if (typeof sharedState === "string") {
+        try {
+            sharedState = JSON.parse(sharedState);
+        } catch {
+            return;
+        }
+    }
+
+    if (!Array.isArray(sharedState.board) || sharedState.board.length !== SIZE) {
+        return;
+    }
+
+    if (!["red", "blue"].includes(sharedState.currentTeam)) {
+        return;
+    }
+
+    const hasValidRows = sharedState.board.every(
+        (row) => Array.isArray(row) && row.length === SIZE
+    );
+
+    if (!hasValidRows) return;
+
+    isApplyingRemoteState = true;
+
+    selected = null;
+    boardState = sharedState.board;
+    currentTeam = sharedState.currentTeam;
+    isGameOver = Boolean(sharedState.isGameOver);
+
+    renderBoard();
+
+    isApplyingRemoteState = false;
+
+    if (isGameOver) {
+        setStatus("Ván đấu đã kết thúc trên thiết bị khác.");
+    } else {
+        setStatus(`${TEAM_NAMES[currentTeam]} đang đi.`);
+    }
+}
+
 function createCell(r, c) {
-    const cell = document.createElement('div');
-    cell.className = 'cell';
+    const cell = document.createElement("div");
+
+    cell.className = "cell";
     cell.id = `cell-${r}-${c}`;
-    cell.setAttribute('can-mirror', '');
     cell.dataset.r = String(r);
     cell.dataset.c = String(c);
-    cell.addEventListener('click', () => handleMove(cell));
+
+    cell.addEventListener("click", () => handleMove(cell));
+
     return cell;
 }
 
 function renderBoard() {
     for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
-            const cell = document.getElementById(`cell-${r}-${c}`) || createCell(r, c);
+            const cell =
+                document.getElementById(`cell-${r}-${c}`) ||
+                createCell(r, c);
 
             const piece = boardState[r][c];
+
+            cell.classList.remove("selected");
+
             if (piece) {
                 cell.dataset.piece = piece.piece;
                 cell.dataset.team = piece.team;
-                cell.innerHTML = `<span class="piece ${piece.team}">${PIECE_ICONS[piece.piece]}</span>`;
+                cell.innerHTML =
+                    `<span class="piece ${piece.team}">${PIECE_ICONS[piece.piece]}</span>`;
             } else {
                 delete cell.dataset.piece;
                 delete cell.dataset.team;
-                cell.innerHTML = '';
+                cell.innerHTML = "";
             }
 
             if (!cell.isConnected) {
@@ -101,15 +185,17 @@ function renderBoard() {
     }
 
     if (selected) {
-        const selectedCell = document.getElementById(`cell-${selected.dataset.r}-${selected.dataset.c}`);
+        const selectedCell = document.getElementById(
+            `cell-${selected.dataset.r}-${selected.dataset.c}`
+        );
+
         if (selectedCell) {
-            selectedCell.classList.add('selected');
+            selectedCell.classList.add("selected");
         }
     }
 
     renderTurn();
 }
-
 
 function countPieces(team) {
     const counts = { rock: 0, paper: 0, scissors: 0 };
@@ -117,6 +203,7 @@ function countPieces(team) {
     for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
             const piece = boardState[r][c];
+
             if (piece && piece.team === team) {
                 counts[piece.piece] += 1;
             }
@@ -132,34 +219,36 @@ function checkWin() {
     const redGoal = boardState[0][8];
     const blueGoal = boardState[8][0];
 
-    if (redGoal && redGoal.team === 'red') {
+    if (redGoal && redGoal.team === "red") {
         isGameOver = true;
-        setStatus('Phe Đỏ thắng vì đưa quân vào ô i9!');
-        alert('Phe Đỏ thắng!');
+        setStatus("Phe Đỏ thắng vì đưa quân vào ô i9!");
         return;
     }
 
-    if (blueGoal && blueGoal.team === 'blue') {
+    if (blueGoal && blueGoal.team === "blue") {
         isGameOver = true;
-        setStatus('Phe Xanh thắng vì đưa quân vào ô a1!');
-        alert('Phe Xanh thắng!');
+        setStatus("Phe Xanh thắng vì đưa quân vào ô a1!");
         return;
     }
 
-    const redCounts = countPieces('red');
-    const blueCounts = countPieces('blue');
+    const redCounts = countPieces("red");
+    const blueCounts = countPieces("blue");
 
-    if (Object.values(redCounts).includes(0) && Object.values(blueCounts).some((count) => count > 0)) {
+    if (
+        Object.values(redCounts).includes(0) &&
+        Object.values(blueCounts).some((count) => count > 0)
+    ) {
         isGameOver = true;
-        setStatus('Phe Xanh thắng vì phe Đỏ đã hết một loại quân!');
-        alert('Phe Xanh thắng!');
+        setStatus("Phe Xanh thắng vì phe Đỏ đã hết một loại quân!");
         return;
     }
 
-    if (Object.values(blueCounts).includes(0) && Object.values(redCounts).some((count) => count > 0)) {
+    if (
+        Object.values(blueCounts).includes(0) &&
+        Object.values(redCounts).some((count) => count > 0)
+    ) {
         isGameOver = true;
-        setStatus('Phe Đỏ thắng vì phe Xanh đã hết một loại quân!');
-        alert('Phe Đỏ thắng!');
+        setStatus("Phe Đỏ thắng vì phe Xanh đã hết một loại quân!");
     }
 }
 
@@ -171,7 +260,10 @@ function canMoveTo(targetCell, sourceCell) {
     const r2 = Number(targetCell.dataset.r);
     const c2 = Number(targetCell.dataset.c);
 
-    const isAdjacent = Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1;
+    const isAdjacent =
+        Math.abs(r1 - r2) <= 1 &&
+        Math.abs(c1 - c2) <= 1;
+
     if (!isAdjacent) return false;
 
     const sourcePiece = boardState[r1][c1];
@@ -182,7 +274,10 @@ function canMoveTo(targetCell, sourceCell) {
     if (!targetPiece) return true;
     if (targetPiece.piece === sourcePiece.piece) return false;
 
-    return PIECE_BEATS[sourcePiece.piece] === targetPiece.piece || PIECE_BEATS[targetPiece.piece] === sourcePiece.piece;
+    return (
+        PIECE_BEATS[sourcePiece.piece] === targetPiece.piece ||
+        PIECE_BEATS[targetPiece.piece] === sourcePiece.piece
+    );
 }
 
 function makeMove(fromR, fromC, toR, toC) {
@@ -222,56 +317,63 @@ function handleMove(targetCell) {
 
     if (!selected && clickedPiece && clickedPiece.team === currentTeam) {
         selected = targetCell;
-        selected.classList.add('selected');
+        selected.classList.add("selected");
         setStatus(`Đã chọn quân ${TEAM_NAMES[currentTeam]}.`);
         return;
     }
 
     if (!selected) {
-        setStatus('Hãy chọn một quân của phe đang đi.');
+        setStatus("Hãy chọn một quân của phe đang đi.");
         return;
     }
 
     const fromR = Number(selected.dataset.r);
     const fromC = Number(selected.dataset.c);
-    const sourcePiece = boardState[fromR][fromC];
 
     if (r === fromR && c === fromC) {
-        selected.classList.remove('selected');
+        selected.classList.remove("selected");
         selected = null;
         return;
     }
 
     if (!canMoveTo(targetCell, selected)) {
-        selected.classList.remove('selected');
+        selected.classList.remove("selected");
         selected = null;
-        setStatus('Nước đi không hợp lệ. Chỉ được di chuyển 1 ô theo 8 hướng.');
+        setStatus("Nước đi không hợp lệ. Chỉ được di chuyển 1 ô theo 8 hướng.");
         return;
     }
 
     const moved = makeMove(fromR, fromC, r, c);
+
     if (!moved) {
-        setStatus('Không thể thực hiện nước đi này.');
-        selected.classList.remove('selected');
+        setStatus("Không thể thực hiện nước đi này.");
+        selected.classList.remove("selected");
         selected = null;
         return;
     }
 
-    selected.classList.remove('selected');
     selected = null;
 
-    currentTeam = currentTeam === 'red' ? 'blue' : 'red';
-    renderBoard();
+    currentTeam = currentTeam === "red" ? "blue" : "red";
+
+    // Kiểm tra thắng trước khi đồng bộ để thiết bị còn lại
+    // nhận cả isGameOver.
     checkWin();
+
+    renderBoard();
+    publishSharedState();
 
     if (!isGameOver) {
         setStatus(`${TEAM_NAMES[currentTeam]} đang đi.`);
     }
 }
 
-function initBoard() {
+async function initGame() {
+    roomLinkEl.href = window.location.href;
+    roomLinkEl.textContent = window.location.href;
+
     boardState = buildInitialBoard();
-    boardEl.innerHTML = '';
+    boardEl.innerHTML = "";
 
     for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
@@ -280,7 +382,39 @@ function initBoard() {
     }
 
     renderBoard();
-    setStatus('Game bắt đầu. Phe Đỏ đi trước.');
+    setStatus("Đang kết nối phòng chơi...");
+
+    resetGameBtn.addEventListener("click", () => {
+        resetGameState();
+    });
+
+    // Quan trọng: phải kết nối và hoàn tất sync trước khi tạo PageData.
+    await playhtml.init({ room: ROOM_ID });
+    await playhtml.ready;
+
+    const initialState = {
+        board: buildInitialBoard(),
+        currentTeam: "red",
+        isGameOver: false
+    };
+
+    sharedStateChannel = playhtml.createPageData(
+        STATE_CHANNEL_NAME,
+        initialState
+    );
+
+    sharedStateChannel.onUpdate((state) => {
+        restoreSharedState(state);
+    });
+
+    // Lấy state hiện tại của phòng.
+    // Nếu thiết bị khác đã đi trước, thiết bị này sẽ nhận đúng bàn cờ.
+    restoreSharedState(sharedStateChannel.getData());
+
+    setStatus(`${TEAM_NAMES[currentTeam]} đang đi.`);
 }
 
-initBoard();
+initGame().catch((error) => {
+    console.error(error);
+    setStatus("Không thể kết nối phòng chơi. Hãy kiểm tra Internet và tải lại trang.");
+});

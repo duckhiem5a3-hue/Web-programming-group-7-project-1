@@ -34,6 +34,29 @@ h1 {
     text-align: center;
 }
 
+.game-actions {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0;
+}
+
+#reset-game {
+    border: none;
+    border-radius: 999px;
+    background: #2563eb;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+#reset-game:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
 #board {
     display: grid;
     grid-template-columns: repeat(9, 54px);
