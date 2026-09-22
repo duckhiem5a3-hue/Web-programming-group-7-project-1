@@ -205,3 +205,47 @@ h1 {
         gap: 8px;
     }
 }
+
+/* --- ĐÁNH DẤU Ô ĐÍCH A1 VÀ I9 --- */
+.cell.goal-cell {
+    position: relative;
+    font-weight: bold;
+}
+
+/* Ô đích i9 cho Đỏ */
+.cell.goal-red {
+    background-color: #fee2e2;
+    border: 2px dashed #ef4444;
+}
+
+/* Ô đích a1 cho Xanh */
+.cell.goal-blue {
+    background-color: #dbeafe;
+    border: 2px dashed #3b82f6;
+}
+
+/* Hiển thị chữ nhãn khi ô trống (tự ẩn khi có quân cờ đè lên) */
+.cell.goal-red:empty::before {
+    content: "i9 🏁";
+    font-size: 0.75rem;
+    color: #b91c1c;
+    font-weight: bold;
+    opacity: 0.8;
+}
+
+.cell.goal-blue:empty::before {
+    content: "a1 🏁";
+    font-size: 0.75rem;
+    color: #1d4ed8;
+    font-weight: bold;
+    opacity: 0.8;
+}
+
+/* Tối ưu hiển thị trên màn hình nhỏ / điện thoại */
+@media (max-width: 720px) {
+    .cell.goal-red:empty::before,
+    .cell.goal-blue:empty::before {
+        font-size: 0.55rem;
+        content: "🏁";
+    }
+}

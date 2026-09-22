@@ -177,6 +177,15 @@ function createCell(r, c) {
     cell.dataset.r = String(r);
     cell.dataset.c = String(c);
 
+    // Đánh dấu ô đích a1 (Xanh thắng) và i9 (Đỏ thắng)
+    if (r === 8 && c === 0) {
+        cell.classList.add("goal-cell", "goal-blue");
+        cell.title = "Ô đích a1 (Phe Xanh đưa quân vào đây để thắng)";
+    } else if (r === 0 && c === 8) {
+        cell.classList.add("goal-cell", "goal-red");
+        cell.title = "Ô đích i9 (Phe Đỏ đưa quân vào đây để thắng)";
+    }
+
     cell.addEventListener("click", () => handleMove(cell));
 
     return cell;
