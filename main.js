@@ -1,14 +1,40 @@
 import { playhtml } from "https://unpkg.com/playhtml";
 
 const SIZE = 9;
-const ROOM_ID = "ottv2-main-room";
 const STATE_CHANNEL_NAME = "ottv2-game-state";
 
+// --- LOGIC QUẢN LÝ MÃ PHÒNG (ROOM ID) ---
+function getRoomIdFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("room")?.trim();
+}
+
+function generateRandomRoomId() {
+    // Tạo mã ngẫu nhiên 6 ký tự chữ/số (Ví dụ: K9A2X1)
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// Lấy mã phòng từ URL, nếu không có thì tạo mới và tự cập nhật URL
+let currentRoomCode = getRoomIdFromURL();
+if (!currentRoomCode) {
+    currentRoomCode = generateRandomRoomId();
+    const newUrl = `${window.location.pathname}?room=${currentRoomCode}`;
+    window.history.replaceState(null, "", newUrl);
+}
+
+// Đặt prefix để tránh trùng tên room với ứng dụng khác trên PlayHTML
+const ROOM_ID = `ottv2-room-${currentRoomCode}`;
+
+// Element UI
 const boardEl = document.getElementById("board");
 const turnEl = document.getElementById("turn");
 const statusEl = document.getElementById("status");
-const roomLinkEl = document.getElementById("room-link");
 const resetGameBtn = document.getElementById("reset-game");
+const currentRoomDisplayEl = document.getElementById("current-room-display");
+const copyLinkBtn = document.getElementById("copy-link-btn");
+const roomInput = document.getElementById("room-input");
+const joinRoomBtn = document.getElementById("join-room-btn");
+const createRoomBtn = document.getElementById("create-room-btn");
 
 const PIECE_ICONS = {
     rock: "✊",
@@ -356,8 +382,6 @@ function handleMove(targetCell) {
 
     currentTeam = currentTeam === "red" ? "blue" : "red";
 
-    // Kiểm tra thắng trước khi đồng bộ để thiết bị còn lại
-    // nhận cả isGameOver.
     checkWin();
 
     renderBoard();
@@ -368,9 +392,43 @@ function handleMove(targetCell) {
     }
 }
 
+// --- KHỞI TẠO XỬ LÝ SỰ KIỆN QUẢN LÝ PHÒNG ---
+function setupRoomEvents() {
+    currentRoomDisplayEl.textContent = currentRoomCode;
+
+    // Nút Sao chép đường dẫn phòng
+    copyLinkBtn.addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            const originalText = copyLinkBtn.textContent;
+            copyLinkBtn.textContent = "✅ Đã sao chép!";
+            setTimeout(() => {
+                copyLinkBtn.textContent = originalText;
+            }, 2000);
+        } catch {
+            alert("Không thể tự động sao chép. Bạn có thể copy link trên thanh địa chỉ!");
+        }
+    });
+
+    // Nút Vào phòng theo mã
+    joinRoomBtn.addEventListener("click", () => {
+        const targetRoom = roomInput.value.trim();
+        if (targetRoom) {
+            window.location.search = `?room=${encodeURIComponent(targetRoom)}`;
+        } else {
+            alert("Vui lòng nhập mã phòng!");
+        }
+    });
+
+    // Nút Tạo phòng ngẫu nhiên mới
+    createRoomBtn.addEventListener("click", () => {
+        const newCode = generateRandomRoomId();
+        window.location.search = `?room=${newCode}`;
+    });
+}
+
 async function initGame() {
-    roomLinkEl.href = window.location.href;
-    roomLinkEl.textContent = window.location.href;
+    setupRoomEvents();
 
     boardState = buildInitialBoard();
     boardEl.innerHTML = "";
@@ -382,13 +440,13 @@ async function initGame() {
     }
 
     renderBoard();
-    setStatus("Đang kết nối phòng chơi...");
+    setStatus(`Đang kết nối vào phòng [${currentRoomCode}]...`);
 
     resetGameBtn.addEventListener("click", () => {
         resetGameState();
     });
 
-    // Quan trọng: phải kết nối và hoàn tất sync trước khi tạo PageData.
+    // Kết nối đến PlayHTML với ROOM_ID tương ứng theo mã phòng
     await playhtml.init({ room: ROOM_ID });
     await playhtml.ready;
 
@@ -407,8 +465,6 @@ async function initGame() {
         restoreSharedState(state);
     });
 
-    // Lấy state hiện tại của phòng.
-    // Nếu thiết bị khác đã đi trước, thiết bị này sẽ nhận đúng bàn cờ.
     restoreSharedState(sharedStateChannel.getData());
 
     setStatus(`${TEAM_NAMES[currentTeam]} đang đi.`);
