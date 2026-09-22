@@ -1,171 +1,137 @@
 # Oẳn Tù Tì v2 (OTTv2)
 
-## 🎮 Giới thiệu
+## Giới thiệu
 
-**Oẳn Tù Tì v2 (OTTv2)** là một trò chơi oẳn tù tì được xây dựng bằng HTML, CSS và JavaScript, hỗ trợ đồng bộ trạng thái trò chơi giữa nhiều thiết bị thông qua PlayHTML.
+OTTv2 là trò chơi chiến thuật nhiều người chơi trên bàn cờ 9x9, được xây dựng bằng HTML, CSS và JavaScript. Trạng thái phòng và ván đấu được đồng bộ giữa các trình duyệt thông qua PlayHTML.
 
-### 🌐 Demo
+Demo: [Chơi Oẳn Tù Tì v2](https://duckhiem5a3-hue.github.io/Web-programming-group-7-project-1/)
 
-Bạn có thể truy cập phiên bản đã deploy tại:
+## Tính năng
 
-**[👉 Chơi Oẳn Tù Tì v2](https://duckhiem5a3-hue.github.io/Web-programming-group-7-project-1/)**
+- Sảnh chờ với 3 lựa chọn:
+  - **Ghép ngẫu nhiên:** vào một phòng đang có 1 người; nếu chưa có phòng chờ thì tạo phòng mới.
+  - **Nhập mã phòng:** chỉ vào được phòng tồn tại và đang có đúng 1 người chờ.
+  - **Tạo phòng mới:** luôn tạo một phòng mới với mã riêng.
+- Mỗi phòng tối đa 2 người chơi.
+- Người đầu tiên là phe Đỏ, người thứ hai là phe Xanh.
+- Bàn cờ chỉ hiển thị sau khi người chơi đã vào phòng.
+- Hiển thị rõ người chơi đang là quân Đỏ hay quân Xanh.
+- Đồng bộ bàn cờ và lượt chơi giữa hai người.
+- Phòng rỗng được xóa khỏi lobby.
+- Khi một người rời phòng, bàn cờ reset và slot được giải phóng.
+- Nút chơi lại yêu cầu cả hai người cùng đồng ý.
+- Ô đích của phe Đỏ là `a1`; ô đích của phe Xanh là `i9`.
+- Giao diện hỗ trợ máy tính và thiết bị di động.
 
----
+## Luật chơi
 
-## ✨ Tính năng
-
-* 🎮 Trò chơi Oẳn Tù Tì trên bàn cờ 9×9.
-* 🔴🔵 Hai đội: Đỏ và Xanh.
-* ✊ Đá, ✋ Giấy, ✌️ Kéo.
-* 🔄 Luân phiên lượt chơi giữa hai đội.
-* 🌐 Đồng bộ trạng thái trò chơi giữa các thiết bị.
-* 🏆 Kiểm tra điều kiện chiến thắng tự động.
-* 📱 Giao diện responsive, hỗ trợ cả máy tính và điện thoại.
-
-## 🛠️ Công nghệ sử dụng
-
-* **HTML5**
-* **CSS3**
-* **JavaScript**
-* **PlayHTML** – đồng bộ dữ liệu giữa các phiên trình duyệt.
-
-## 📁 Cấu trúc dự án
+- Mỗi lượt, người chơi chọn một quân thuộc phe của mình rồi chọn một ô liền kề theo 8 hướng.
+- Không được di chuyển vào quân cùng phe.
+- Khi hai quân khác phe giao chiến, luật thắng là:
 
 ```text
-OTTv2/
-├── index.html
-├── main.js
-├── style.css
-└── README.md
+Đá thắng Kéo
+Giấy thắng Đá
+Kéo thắng Giấy
 ```
 
-## 🌐 Cơ chế đồng bộ
+- Phe Đỏ thắng khi đưa quân Đỏ vào `a1`.
+- Phe Xanh thắng khi đưa quân Xanh vào `i9`.
+- Một phe cũng có thể thắng khi đối phương mất một loại quân theo điều kiện của trò chơi.
 
-Ứng dụng sử dụng **PlayHTML** để chia sẻ trạng thái trò chơi giữa những người chơi.
+## Cách chơi
 
-Trạng thái được đồng bộ bao gồm:
+1. Mở trang web hoặc link demo.
+2. Chọn một trong ba cách vào phòng ở sảnh chờ.
+3. Nếu tạo phòng hoặc ghép ngẫu nhiên, gửi link có mã phòng cho người chơi thứ hai khi cần.
+4. Chờ đủ 2 người. Người đầu tiên chơi phe Đỏ, người thứ hai chơi phe Xanh.
+5. Chỉ phe đúng lượt mới có thể chọn và di chuyển quân.
+
+### Chơi lại
+
+Khi muốn bắt đầu lại ván:
+
+1. Một người bấm **Chơi lại từ đầu**.
+2. Người còn lại bấm **Đồng ý chơi lại**.
+3. Bàn cờ chỉ reset sau khi cả hai người đã xác nhận.
+
+## Công nghệ
+
+- HTML5
+- CSS3
+- JavaScript ES Modules
+- [PlayHTML](https://unpkg.com/playhtml) để đồng bộ dữ liệu giữa các trình duyệt
+- GitHub Pages để deploy
+
+## Kiến trúc đồng bộ
+
+Ứng dụng sử dụng hai loại kênh PlayHTML:
+
+- `ottv2-lobby`: lưu danh sách phòng và người chơi trong từng phòng.
+- `ottv2-game-state-{roomCode}`: lưu trạng thái bàn cờ của từng phòng.
+
+Trạng thái ván đấu gồm các dữ liệu chính:
 
 ```javascript
 {
     board: boardState,
-    currentTeam: currentTeam,
-    isGameOver: isGameOver
+    currentTeam: "red" | "blue",
+    isGameOver: boolean,
+    resetVotes: string[]
 }
 ```
 
-Khi một người chơi thực hiện nước đi:
+Mỗi người chơi gửi heartbeat định kỳ. Nếu người chơi rời trang hoặc không còn heartbeat trong một khoảng thời gian, người đó được loại khỏi phòng. Khi phòng không còn người, bản ghi phòng bị xóa khỏi lobby.
+
+## Cấu trúc dự án
 
 ```text
-Thiết bị A
-   ↓
-Thực hiện nước đi
-   ↓
-Cập nhật game state
-   ↓
-PlayHTML
-   ↓
-Thiết bị B
-   ↓
-Cập nhật bàn cờ
+Web-programming-group-7-project-1/
+├── index.html   # Giao diện sảnh chờ và bàn cờ
+├── main.js      # Logic phòng, đồng bộ và luật chơi
+├── style.css    # Giao diện responsive
+└── README.md    # Tài liệu dự án
 ```
 
-Nhờ đó, các thiết bị đang truy cập cùng phòng có thể nhìn thấy trạng thái trò chơi được cập nhật.
+## Chạy local
 
-## 🎯 Luật di chuyển
+Khuyến nghị chạy bằng một web server local vì ứng dụng sử dụng JavaScript module và tải PlayHTML từ CDN.
 
-* Mỗi quân chỉ có thể di chuyển sang ô liền kề.
-* Không thể di chuyển vào quân cùng loại.
-* Hai quân khác đội có thể giao chiến.
-* Kết quả giao chiến dựa trên luật:
+### VS Code Live Server
+
+1. Cài extension **Live Server**.
+2. Mở file `index.html`.
+3. Chọn **Open with Live Server**.
+
+### Web server khác
+
+Từ thư mục dự án, có thể dùng một web server tĩnh bất kỳ. Ví dụ với Python:
+
+```bash
+python -m http.server 8000
+```
+
+Sau đó mở:
 
 ```text
-✊ Đá thắng ✌️ Kéo
-✋ Giấy thắng ✊ Đá
-✌️ Kéo thắng ✋ Giấy
+http://localhost:8000
 ```
 
-## 🏆 Điều kiện chiến thắng
+## Kiểm tra nhiều người chơi
 
-Người chơi có thể chiến thắng khi:
+1. Mở ứng dụng trên hai trình duyệt hoặc hai cửa sổ riêng.
+2. Người chơi thứ nhất chọn **Tạo phòng mới** hoặc **Ghép ngẫu nhiên**.
+3. Người chơi thứ hai nhập mã phòng hoặc chọn **Ghép ngẫu nhiên**.
+4. Kiểm tra hai người nhận lần lượt phe Đỏ và phe Xanh.
+5. Thử đóng một cửa sổ để kiểm tra slot phòng được giải phóng và bàn cờ reset.
 
-* Đưa quân đến vị trí đích tương ứng.
-* Hoặc loại bỏ được các loại quân của đối phương theo luật của trò chơi.
+## Thành viên
 
-## 🚀 Chạy project
+**Group 7 - Web Programming Project 1**
 
-### Cách 1: Chạy trực tiếp
-
-Mở file:
-
-```text
-index.html
-```
-
-bằng trình duyệt.
-
-### Cách 2: Sử dụng VS Code
-
-Cài extension **Live Server**, sau đó:
-
-```text
-Right click index.html
-→ Open with Live Server
-```
-
-## 🌐 Deploy
-
-Project hiện đã được deploy bằng **GitHub Pages**.
-
-**Link:**
-https://duckhiem5a3-hue.github.io/Web-programming-group-7-project-1/
-
-Bạn có thể mở link trên nhiều thiết bị để kiểm tra khả năng đồng bộ trò chơi.
-
-## 🧪 Kiểm tra đồng bộ
-
-1. Mở link deploy trên **thiết bị A**.
-2. Mở cùng link trên **thiết bị B**.
-3. Thực hiện một nước đi trên thiết bị A.
-4. Kiểm tra bàn cờ trên thiết bị B.
-5. Trạng thái bàn cờ và lượt chơi sẽ được đồng bộ.
-
-> Lưu ý: phiên bản hiện tại sử dụng một room cố định là `ottv2-main-room`, vì vậy những người truy cập cùng phiên bản deploy sẽ tham gia cùng một room.
-
-## 🔮 Hướng phát triển
-
-Một số tính năng có thể phát triển trong tương lai:
-
-* Tạo phòng riêng.
-* Tham gia phòng bằng mã phòng.
-* Phân quyền người chơi Đỏ/Xanh.
-* Lobby trước khi bắt đầu trận.
-* Chức năng chơi lại.
-* Hiển thị người chơi đang online.
-* Đồng hồ đếm ngược lượt.
-* Lịch sử nước đi.
-* Chat giữa người chơi.
-* Lưu lịch sử trận đấu.
-
-## 🎓 Mục tiêu học tập
-
-Project được thực hiện nhằm thực hành:
-
-* HTML/CSS/JavaScript.
-* Xử lý sự kiện trong JavaScript.
-* Quản lý state của ứng dụng.
-* Đồng bộ dữ liệu giữa các client.
-* Làm việc với Git/GitHub.
-* Deploy project bằng GitHub Pages.
-* Làm việc nhóm và quản lý source code.
-
-## 👨‍💻 Thành viên
-
-**Group 7 – Web Programming Project 1**
-
-| STT | Họ và tên            |     MSSV |
-| --: | -------------------- | -------: |
-|   1 | Lê Bá Minh Hiếu      | 24020125 |
-|   2 | Nguyễn Đức Khiêm     | 24020180 |
-|   3 | Dương Nguyễn Đức Huy | 24022799 |
-|   4 | Nguyễn Doãn Dũng     | 24020089 |
-
+| STT | Họ và tên | MSSV |
+| --: | --- | ---: |
+| 1 | Lê Bá Minh Hiếu | 24020125 |
+| 2 | Nguyễn Đức Khiêm | 24020180 |
+| 3 | Dương Nguyễn Đức Huy | 24022799 |
+| 4 | Nguyễn Doãn Dũng | 24020089 |
