@@ -1,4 +1,3 @@
-Dưới đây là toàn bộ nội dung mã Markdown chuẩn. Bạn chỉ cần bấm nút **Copy** ở góc trên khung code bên dưới và dán trực tiếp vào file **`README.md`**:
 
 ```markdown
 # Oẳn Tù Tì v2 (OTTv2)
