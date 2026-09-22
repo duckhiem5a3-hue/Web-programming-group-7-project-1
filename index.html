@@ -2,21 +2,36 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oẳn Tù Tì v2 (OTTv2)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <main>
-        <h1>Oẳn Tù Tì v2 - Bàn cờ 9x9</h1>
-        <div class="room-link">
-            Link phòng chơi (Gửi cho người thứ 2): <a id="room-link" href="#"></a>
+        <h1>Oẳn Tù Tì v2</h1>
+
+        <!-- KHU VỰC QUẢN LÝ PHÒNG -->
+        <div class="room-container">
+            <div class="room-info">
+                <span>Mã phòng hiện tại: <strong id="current-room-display">...</strong></span>
+                <button id="copy-link-btn" title="Sao chép đường dẫn phòng">📋 Copy Link mời</button>
+            </div>
+            
+            <div class="room-actions">
+                <input type="text" id="room-input" placeholder="Nhập mã phòng..." maxlength="15">
+                <button id="join-room-btn">Vào phòng</button>
+                <button id="create-room-btn" class="btn-secondary">➕ Tạo phòng mới</button>
+            </div>
         </div>
-        <div id="turn">Đỏ đang đi</div>
-        <div id="status">Đang kết nối phòng chơi...</div>
+
+        <div id="turn">Đang tải...</div>
+        <div id="status">Đang kết nối...</div>
+
         <div class="game-actions">
-            <button id="reset-game" type="button">Chơi lại từ đầu</button>
+            <button id="reset-game">Chơi lại ván này</button>
         </div>
-        <div id="board" aria-label="Bàn cờ Oẳn Tù Tì"></div>
+
+        <div id="board"></div>
     </main>
 
     <script type="module" src="main.js"></script>

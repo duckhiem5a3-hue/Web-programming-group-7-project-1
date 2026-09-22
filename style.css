@@ -1,4 +1,3 @@
-
 body {
     margin: 0;
     font-family: Arial, Helvetica, sans-serif;
@@ -22,12 +21,84 @@ h1 {
     text-align: center;
 }
 
-.room-link {
-    margin: 8px 0 16px;
-    font-size: 0.95rem;
-    word-break: break-all;
+/* --- QUẢN LÝ PHÒNG (ROOM UI) --- */
+.room-container {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
+.room-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.05rem;
+}
+
+.room-info strong {
+    color: #2563eb;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+}
+
+#copy-link-btn {
+    background: #e2e8f0;
+    border: 1px solid #94a3b8;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+#copy-link-btn:hover {
+    background: #cbd5e1;
+}
+
+.room-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.room-actions input {
+    flex: 1;
+    min-width: 140px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.room-actions button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    background: #10b981;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.room-actions button:hover {
+    background: #059669;
+}
+
+.room-actions button.btn-secondary {
+    background: #6b7280;
+}
+
+.room-actions button.btn-secondary:hover {
+    background: #4b5563;
+}
+
+/* --- TRẠNG THÁI VÀ NÚT CHƠI LẠI --- */
 #turn, #status {
     font-size: 1.05rem;
     margin: 10px 0;
@@ -57,6 +128,7 @@ h1 {
     transform: translateY(-1px);
 }
 
+/* --- BÀN CỜ VÀ QUÂN CỜ --- */
 #board {
     display: grid;
     grid-template-columns: repeat(9, 54px);
@@ -125,5 +197,55 @@ h1 {
         width: 22px;
         height: 22px;
         font-size: 1.15rem;
+    }
+
+    .room-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+
+/* --- ĐÁNH DẤU Ô ĐÍCH A1 VÀ I9 --- */
+.cell.goal-cell {
+    position: relative;
+    font-weight: bold;
+}
+
+/* Ô đích i9 cho Đỏ */
+.cell.goal-red {
+    background-color: #fee2e2;
+    border: 2px dashed #ef4444;
+}
+
+/* Ô đích a1 cho Xanh */
+.cell.goal-blue {
+    background-color: #dbeafe;
+    border: 2px dashed #3b82f6;
+}
+
+/* Hiển thị chữ nhãn khi ô trống (tự ẩn khi có quân cờ đè lên) */
+.cell.goal-red:empty::before {
+    content: "i9 🏁";
+    font-size: 0.75rem;
+    color: #b91c1c;
+    font-weight: bold;
+    opacity: 0.8;
+}
+
+.cell.goal-blue:empty::before {
+    content: "a1 🏁";
+    font-size: 0.75rem;
+    color: #1d4ed8;
+    font-weight: bold;
+    opacity: 0.8;
+}
+
+/* Tối ưu hiển thị trên màn hình nhỏ / điện thoại */
+@media (max-width: 720px) {
+    .cell.goal-red:empty::before,
+    .cell.goal-blue:empty::before {
+        font-size: 0.55rem;
+        content: "🏁";
     }
 }
