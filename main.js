@@ -462,6 +462,7 @@ function restoreSharedState(sharedState) {
         : [];
 
     if (resetVotes.length >= 2) {
+        isApplyingRemoteState = false;
         resetGameState();
         return;
     }
@@ -541,12 +542,12 @@ function renderBoard() {
         for (let c = 0; c < SIZE; c++) {
             const cell = document.getElementById(`cell-${r}-${c}`);
 
-            if (r === 8 && c === 0) {
+            if (r === 0 && c === 8) {
                 cell.classList.add("goal-red");
-                cell.title = "Ô đích a1 của phe Đỏ";
-            } else if (r === 0 && c === 8) {
+                cell.title = "Ô đích i9 của phe Đỏ";
+            } else if (r === 8 && c === 0) {
                 cell.classList.add("goal-blue");
-                cell.title = "Ô đích i9 của phe Xanh";
+                cell.title = "Ô đích a1 của phe Xanh";
             } else {
                 cell.classList.remove("goal-red", "goal-blue");
                 cell.removeAttribute("title");
@@ -576,8 +577,8 @@ function countPieces(team) {
 function checkWin() {
     if (isGameOver) return;
 
-    const redGoal = boardState[8][0];
-    const blueGoal = boardState[0][8];
+    const redGoal = boardState[0][8];
+    const blueGoal = boardState[8][0];
 
     if (redGoal && redGoal.team === "red") {
         isGameOver = true;
