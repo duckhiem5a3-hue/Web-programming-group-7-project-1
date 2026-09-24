@@ -17,6 +17,7 @@ const createRoomBtn = document.getElementById("create-room");
 const roomChoiceEl = document.getElementById("room-choice");
 const roomChoiceStatusEl = document.getElementById("room-choice-status");
 const resetGameBtn = document.getElementById("reset-game");
+const leaveRoomBtn = document.getElementById("leave-room");
 const roomStateEl = document.getElementById("room-state");
 const playerTeamEl = document.getElementById("player-team");
 
@@ -186,6 +187,21 @@ function leaveRoom() {
     saveLobbyState(lobbyState);
 }
 
+function exitRoom() {
+    leaveRoom();
+    isLeavingRoom = false;
+    roomCode = "";
+    playerTeam = null;
+    isRoomFull = false;
+    sharedStateChannel = null;
+    document.body.classList.remove("in-room");
+    roomChoiceEl.hidden = false;
+    roomChoiceStatusEl.textContent = "";
+    leaveRoomBtn.hidden = true;
+    resetGameBtn.textContent = "Chơi lại từ đầu";
+    window.history.replaceState({}, "", window.location.pathname);
+}
+
 function refreshPresence() {
     if (isLeavingRoom || !lobbyChannel || !roomCode || !playerId) return;
 
@@ -346,6 +362,7 @@ function resetGameState() {
     isGameOver = false;
     boardState = buildInitialBoard();
     renderBoard();
+    leaveRoomBtn.hidden = true;
     resetGameBtn.textContent = "Chơi lại từ đầu";
     setStatus("Đã chơi lại từ đầu. Phe Đỏ đang đi.");
     publishSharedState();
@@ -455,6 +472,7 @@ function restoreSharedState(sharedState) {
 
     if (isGameOver) {
         setStatus("Ván đấu đã kết thúc trên thiết bị khác.");
+        leaveRoomBtn.hidden = false;
     } else if (resetVotes.includes(playerId)) {
         resetGameBtn.textContent = "Đã đồng ý - chờ người kia";
         setStatus("Người chơi còn lại chưa đồng ý chơi lại.");
@@ -462,6 +480,7 @@ function restoreSharedState(sharedState) {
         resetGameBtn.textContent = "Đồng ý chơi lại";
         setStatus("Người chơi còn lại muốn chơi lại từ đầu.");
     } else {
+        leaveRoomBtn.hidden = true;
         resetGameBtn.textContent = "Chơi lại từ đầu";
         setStatus(`${TEAM_NAMES[currentTeam]} đang đi.`);
     }
@@ -557,18 +576,20 @@ function countPieces(team) {
 function checkWin() {
     if (isGameOver) return;
 
-    const redGoal = boardState[8][0];
-    const blueGoal = boardState[0][8];
+    const redGoal = boardState[0][8];
+    const blueGoal = boardState[8][0];
 
     if (redGoal && redGoal.team === "red") {
         isGameOver = true;
-        setStatus("Phe Đỏ thắng vì đưa quân vào ô a1!");
+        leaveRoomBtn.hidden = false;
+        setStatus("Phe Đỏ thắng vì đưa quân vào ô i9!");
         return;
     }
 
     if (blueGoal && blueGoal.team === "blue") {
         isGameOver = true;
-        setStatus("Phe Xanh thắng vì đưa quân vào ô i9!");
+        leaveRoomBtn.hidden = false;
+        setStatus("Phe Xanh thắng vì đưa quân vào ô a1!");
         return;
     }
 
@@ -580,6 +601,7 @@ function checkWin() {
         Object.values(blueCounts).some((count) => count > 0)
     ) {
         isGameOver = true;
+        leaveRoomBtn.hidden = false;
         setStatus("Phe Xanh thắng vì phe Đỏ đã hết một loại quân!");
         return;
     }
@@ -589,6 +611,7 @@ function checkWin() {
         Object.values(redCounts).some((count) => count > 0)
     ) {
         isGameOver = true;
+        leaveRoomBtn.hidden = false;
         setStatus("Phe Đỏ thắng vì phe Xanh đã hết một loại quân!");
     }
 }
@@ -738,6 +761,8 @@ async function initGame() {
     resetGameBtn.addEventListener("click", () => {
         requestGameReset();
     });
+
+    leaveRoomBtn.addEventListener("click", exitRoom);
 
     await playhtml.init({ room: NETWORK_ROOM_ID });
     await playhtml.ready;
