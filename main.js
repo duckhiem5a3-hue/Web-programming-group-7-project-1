@@ -576,8 +576,8 @@ function countPieces(team) {
 function checkWin() {
     if (isGameOver) return;
 
-    const redGoal = boardState[0][8];
-    const blueGoal = boardState[8][0];
+    const redGoal = boardState[8][0];
+    const blueGoal = boardState[0][8];
 
     if (redGoal && redGoal.team === "red") {
         isGameOver = true;
